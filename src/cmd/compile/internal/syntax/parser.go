@@ -2618,6 +2618,9 @@ func (p *parser) stmtOrNil() Stmt {
 	case _For:
 		return p.forStmt()
 
+	case _Until:
+		return p.untilStmt()
+
 	case _Switch:
 		return p.switchStmt()
 
@@ -2671,6 +2674,20 @@ func (p *parser) stmtOrNil() Stmt {
 	}
 
 	return nil
+}
+
+func (p *parser) untilStmt() Stmt {
+	if trace {
+		defer p.trace("untilStmt")()
+	}
+
+	s := new(UntilStmt)
+	s.pos = p.pos()
+
+	s.Init, s.Cond, _ = p.header(_Until)
+	s.Body = p.blockStmt("until clause")
+
+	return s
 }
 
 // StatementList = { Statement ";" } .
