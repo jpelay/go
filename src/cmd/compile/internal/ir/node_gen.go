@@ -557,6 +557,40 @@ func (n *ForStmt) editChildren(edit func(Node) Node) {
 	editNodes(n.Body, edit)
 }
 
+func (n *UntilStmt) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
+func (n *UntilStmt) copy() Node {
+	c := *n
+	c.init = copyNodes(c.init)
+	c.Late = copyNodes(c.Late)
+	c.Body = copyNodes(c.Body)
+	return &c
+}
+func (n *UntilStmt) doChildren(do func(Node) bool) bool {
+	if doNodes(n.init, do) {
+		return true
+	}
+	if n.Cond != nil && do(n.Cond) {
+		return true
+	}
+	if doNodes(n.Late, do) {
+		return true
+	}
+
+	if doNodes(n.Body, do) {
+		return true
+	}
+	return false
+}
+func (n *UntilStmt) editChildren(edit func(Node) Node) {
+	editNodes(n.init, edit)
+	if n.Cond != nil {
+		n.Cond = edit(n.Cond).(Node)
+	}
+	editNodes(n.Late, edit)
+	
+	editNodes(n.Body, edit)
+}
+
 func (n *Func) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
 
 func (n *FuncType) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
