@@ -246,7 +246,7 @@ func (n *ForStmt) SetOp(op Op) {
 }
 
 func (n *UntilStmt) SetOp(op Op) {
-	if op != OUNTIL {
+	if op != OUNTIL && op != OFOR {
 		panic(n.no("SetOp " + op.String()))
 	}
 	n.op = op
