@@ -1755,6 +1755,98 @@ func (s *state) stmt(n ir.Node) {
 		b.Pos = s.lastPos.WithIsStmt() // Do this even if b is an empty block.
 		b.AddEdgeTo(to)
 
+	case ir.OUNTIL:
+		// OUNTIL: until Ninit; Left { Nbody }
+		// cond (Left); body (Nbody)
+		n := n.(*ir.UntilStmt)
+		bCond := s.f.NewBlock(ssa.BlockPlain)
+		bBody := s.f.NewBlock(ssa.BlockPlain)
+		bIncr := s.f.NewBlock(ssa.BlockPlain)
+		bEnd := s.f.NewBlock(ssa.BlockPlain)
+
+		// ensure empty for loops have correct position; issue #30167
+		bBody.Pos = n.Pos()
+
+		// first, jump to condition test (OFOR) or body (OFORUNTIL)
+		b := s.endBlock()
+		b.AddEdgeTo(bCond)
+		// generate code to test condition
+		s.startBlock(bCond)
+		if n.Cond != nil {
+			s.condBranch(n.Cond, bBody, bEnd, 1)
+		} else {
+			b := s.endBlock()
+			b.Kind = ssa.BlockPlain
+			b.AddEdgeTo(bBody)
+		}
+
+		// set up for continue/break in body
+		prevContinue := s.continueTo
+		prevBreak := s.breakTo
+		s.continueTo = bIncr
+		s.breakTo = bEnd
+		var lab *ssaLabel
+		if sym := n.Label; sym != nil {
+			// labeled for loop
+			lab = s.label(sym)
+			lab.continueTarget = bIncr
+			lab.breakTarget = bEnd
+		}
+
+		// generate body
+		s.startBlock(bBody)
+		s.stmtList(n.Body)
+
+		// tear down continue/break
+		s.continueTo = prevContinue
+		s.breakTo = prevBreak
+		if lab != nil {
+			lab.continueTarget = nil
+			lab.breakTarget = nil
+		}
+
+		// done with body, goto incr
+		if b := s.endBlock(); b != nil {
+			b.AddEdgeTo(bIncr)
+		}
+		s.startBlock(bIncr)
+		if b := s.endBlock(); b != nil {
+			b.AddEdgeTo(bCond)
+			// It can happen that bIncr ends in a block containing only VARKILL,
+			// and that muddles the debugging experience.
+			if b.Pos == src.NoXPos {
+				b.Pos = bCond.Pos
+			}
+		}
+		/*
+			// generate incr (and, for OFORUNTIL, condition)
+
+			if n.Post != nil {
+				s.stmt(n.Post)
+			}
+			// I dont think this is needed!
+
+				if n.Op() == ir.OFOR {
+					if b := s.endBlock(); b != nil {
+						b.AddEdgeTo(bCond)
+						// It can happen that bIncr ends in a block containing only VARKILL,
+						// and that muddles the debugging experience.
+						if b.Pos == src.NoXPos {
+							b.Pos = bCond.Pos
+						}
+					}
+				} else {
+					// bCond is unused in OFORUNTIL, so repurpose it.
+					bLateIncr := bCond
+					// test condition
+					s.condBranch(n.Cond, bLateIncr, bEnd, 1)
+					// generate late increment
+					s.startBlock(bLateIncr)
+					s.stmtList(n.Late)
+					s.endBlock().AddEdgeTo(bBody)
+				}
+		*/
+		s.startBlock(bEnd)
 	case ir.OFOR, ir.OFORUNTIL:
 		// OFOR: for Ninit; Left; Right { Nbody }
 		// cond (Left); body (Nbody); incr (Right)
