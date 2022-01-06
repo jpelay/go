@@ -1,42 +1,33 @@
 # The Go Programming Language
 
-Go is an open source programming language that makes it easy to build simple,
-reliable, and efficient software.
+This fork of the go programming language adds a new `until` statement to it as described in this post: [Go compiler internals: adding a new statement to Go - Part 1](https://eli.thegreenplace.net/2019/go-compiler-internals-adding-a-new-statement-to-go-part-1/). Although due to some refactoring in the go compiler, I had to do some major changes, but Eli's post was instrumental and I couldn't have done it without his post.
 
-![Gopher image](https://golang.org/doc/gopher/fiveyears.jpg)
-*Gopher image by [Renee French][rf], licensed under [Creative Commons 3.0 Attributions license][cc3-by].*
+This is an example of how you'd use this new statement:
 
-Our canonical Git repository is located at https://go.googlesource.com/go.
-There is a mirror of the repository at https://github.com/golang/go.
+```go
+package main
 
-Unless otherwise noted, the Go source files are distributed under the
-BSD-style license found in the LICENSE file.
+import "fmt"
 
-### Download and Install
+func main() {
+  i := 4
+  until i == 0 {
+    i--
+    fmt.Println("Hello, until!")
+  }
+}
+```
 
-#### Binary Distributions
+To compile and run this version of the compiler you can go to `src` folder that's inside the root of where you cloned the repo and run this command:
 
-Official binary distributions are available at https://golang.org/dl/.
+```
+./make.bash
+```
 
-After downloading a binary release, visit https://golang.org/doc/install
-for installation instructions.
+If everything goes well to run a program using this compiler you had to do this:
 
-#### Install From Source
+```
+<clone folder>/go/bin/go run untilstmt.go
+```
 
-If a binary distribution is not available for your combination of
-operating system and architecture, visit
-https://golang.org/doc/install/source
-for source installation instructions.
-
-### Contributing
-
-Go is the work of thousands of contributors. We appreciate your help!
-
-To contribute, please read the contribution guidelines at https://golang.org/doc/contribute.
-
-Note that the Go project uses the issue tracker for bug reports and
-proposals only. See https://golang.org/wiki/Questions for a list of
-places to ask questions about the Go language.
-
-[rf]: https://reneefrench.blogspot.com/
-[cc3-by]: https://creativecommons.org/licenses/by/3.0/
+And that's it! I plan to make a blog post and add a `do while` instead!
