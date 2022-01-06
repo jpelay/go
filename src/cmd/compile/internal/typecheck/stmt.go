@@ -268,6 +268,21 @@ func tcFor(n *ir.ForStmt) ir.Node {
 	return n
 }
 
+//tcUntil typecheks an OUNTIL node.
+func tcUntil(n *ir.UntilStmt) ir.Node {
+	Stmts(n.Init())
+	n.Cond = Expr(n.Cond)
+	n.Cond = DefaultLit(n.Cond, nil)
+	if n.Cond != nil {
+		t := n.Cond.Type()
+		if t != nil && !t.IsBoolean() {
+			base.Errorf("non-bool %L used as for condition", n.Cond)
+		}
+	}
+	Stmts(n.Body)
+	return n
+}
+
 func tcGoDefer(n *ir.GoDeferStmt) {
 	what := "defer"
 	if n.Op() == ir.OGO {
