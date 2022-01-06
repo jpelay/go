@@ -1159,6 +1159,8 @@ func (p *noder) stmtFall(stmt syntax.Stmt, fallOK bool) ir.Node {
 		return p.ifStmt(stmt)
 	case *syntax.ForStmt:
 		return p.forStmt(stmt)
+	case *syntax.UntilStmt:
+		return p.untilStmt(stmt)
 	case *syntax.SwitchStmt:
 		return p.switchStmt(stmt)
 	case *syntax.SelectStmt:
@@ -1274,6 +1276,15 @@ func (p *noder) forStmt(stmt *syntax.ForStmt) ir.Node {
 	}
 
 	n := ir.NewForStmt(p.pos(stmt), p.stmt(stmt.Init), p.expr(stmt.Cond), p.stmt(stmt.Post), p.blockStmt(stmt.Body))
+	p.closeAnotherScope()
+	return n
+}
+
+// untilStmt converts the concrete syntax tree node UntilStmt into an AST
+// node.
+func (p *noder) untilStmt(stmt *syntax.UntilStmt) ir.Node {
+	p.openScope(stmt.Pos())
+	n := ir.NewUntilStmt(p.pos(stmt), p.stmt(stmt.Init), p.expr(stmt.Cond), p.blockStmt(stmt.Body))
 	p.closeAnotherScope()
 	return n
 }
