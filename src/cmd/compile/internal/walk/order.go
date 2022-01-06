@@ -802,6 +802,16 @@ func (o *orderState) stmt(n ir.Node) {
 		n.Post = orderStmtInPlace(n.Post, o.free)
 		o.out = append(o.out, n)
 		o.cleanTemp(t)
+	// Clean temporaries from condition evaluation at
+	// beginning of loop body and after for statement.
+	case ir.OUNTIL:
+		n := n.(*ir.UntilStmt)
+		t := o.markTemp()
+		n.Cond = o.exprInPlace(n.Cond)
+		n.Body.Prepend(o.cleanTempNoPop(t)...)
+		orderBlock(&n.Body, o.free)
+		o.out = append(o.out, n)
+		o.cleanTemp(t)
 
 	// Clean temporaries from condition at
 	// beginning of both branches.
