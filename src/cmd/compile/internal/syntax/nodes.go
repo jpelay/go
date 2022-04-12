@@ -410,6 +410,12 @@ type (
 		stmt
 	}
 
+	DoWhileStmt struct {
+		Cond Expr
+		Body *BlockStmt
+		stmt
+	}
+
 	SwitchStmt struct {
 		Init   SimpleStmt
 		Tag    Expr // incl. *TypeSwitchGuard
