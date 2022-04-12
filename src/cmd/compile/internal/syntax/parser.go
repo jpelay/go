@@ -2276,6 +2276,22 @@ func (p *parser) forStmt() Stmt {
 	return s
 }
 
+func (p *parser) doWhileStmt() Stmt {
+	if trace {
+		defer p.trace("doWhileStmt")()
+	}
+
+	s := new(DoWhileStmt)
+	s.pos = p.pos()
+	// advancing the _Do token
+	p.next()
+	s.Body = p.blockStmt("dowhile clause")
+	fmt.Println("2300 %s", tokstring(p.tok))
+	_, s.Cond, _ = p.header(_While)
+	fmt.Println("2303 %s", tokstring(p.tok))
+	return s
+}
+
 func (p *parser) header(keyword token) (init SimpleStmt, cond Expr, post SimpleStmt) {
 	p.want(keyword)
 
@@ -2309,7 +2325,8 @@ func (p *parser) header(keyword token) (init SimpleStmt, cond Expr, post SimpleS
 		pos Pos
 		lit string // valid if pos.IsKnown()
 	}
-	if p.tok != _Lbrace {
+
+	if p.tok != _Lbrace && keyword != _While{
 		if p.tok == _Semi {
 			semi.pos = p.pos()
 			semi.lit = p.lit
@@ -2573,6 +2590,9 @@ func (p *parser) stmtOrNil() Stmt {
 
 	case _For:
 		return p.forStmt()
+	
+	case _Do:
+		return p.doWhileStmt()
 
 	case _Switch:
 		return p.switchStmt()
