@@ -47,6 +47,8 @@ const (
 	_Continue    // continue
 	_Default     // default
 	_Defer       // defer
+	_Do          // do_
+	_While		 // while
 	_Else        // else
 	_Fallthrough // fallthrough
 	_For         // for
@@ -65,7 +67,6 @@ const (
 	_Switch      // switch
 	_Type        // type
 	_Var         // var
-
 	// empty line comment to exclude it from .String
 	tokenCount //
 )
