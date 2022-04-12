@@ -57,7 +57,12 @@ func LoadPackage(filenames []string) {
 				}
 				defer f.Close()
 
-				p.file, _ = syntax.Parse(fbase, f, p.error, p.pragma, mode) // errors are tracked via p.error
+				p.file, _ = syntax.Parse(fbase, f, p.error, p.pragma, mode) // errors are tracked via p.error		
+				if len(os.Getenv("FOO")) > 0 {
+					fmt.Printf("FOO='%s'\n", os.Getenv("FOO"))
+					fmt.Println("Dumping", p.file.PkgName)
+					syntax.Fdump(os.Stdout, p.file)
+				}
 			}()
 		}
 	}()
