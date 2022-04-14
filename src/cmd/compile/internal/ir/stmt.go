@@ -222,6 +222,31 @@ func (n *ForStmt) SetOp(op Op) {
 	n.op = op
 }
 
+// A DoWhile is loop with the structure do_ { Body } while Cond;
+// where the Body is guaranteed to be executed at least once
+type DoWhileStmt struct {
+	miniStmt
+	Label    *types.Sym
+	Cond     Node
+	Body     Nodes
+	HasBreak bool
+}
+
+func NewDoWhileStmt(pos src.XPos, cond Node, body []Node) *DoWhileStmt {
+	n := &DoWhileStmt{Cond: cond}
+	n.pos = pos
+	n.op = ODOWHILE
+	n.Body = body
+	return n
+}
+
+func (n *DoWhileStmt) SetOp(op Op) {
+	if op != ODOWHILE {
+		panic(n.no("SetOp " + op.String()))
+	}
+	n.op = op
+}
+
 // A GoDeferStmt is a go or defer statement: go Call / defer Call.
 //
 // The two opcodes use a single syntax because the implementations

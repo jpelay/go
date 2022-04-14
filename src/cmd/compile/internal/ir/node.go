@@ -273,6 +273,7 @@ const (
 	// 	}
 	// OFORUNTIL is created by walk. There's no way to write this in Go code.
 	OFORUNTIL
+	ODOWHILE // do_ { Body } while Cond;
 	OGOTO   // goto Label
 	OIF     // if Init; Cond { Then } else { Else }
 	OLABEL  // Label:
