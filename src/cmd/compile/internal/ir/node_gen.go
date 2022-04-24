@@ -517,28 +517,28 @@ func (n *ForStmt) editChildren(edit func(Node) Node) {
 	editNodes(n.Body, edit)
 }
 
-// // func (n *DoWhileStmt) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
-// // func (n *DoWhileStmt) copy() Node {
-// // 	c := *n
-// // 	c.init = copyNodes(c.init)
-// // 	c.Body = copyNodes(c.Body)
-// // 	return &c
-// // }
-// // func (n *DoWhileStmt) doChildren(do func(Node) bool) bool {
-// // 	if n.Cond != nil && do(n.Cond) {
-// // 		return true
-// // 	}
-// // 	if doNodes(n.Body, do) {
-// // 		return true
-// // 	}
-// // 	return false
-// // }
-// // func (n *DoWhileStmt) editChildren(edit func(Node) Node) {
-// // 	if n.Cond != nil {
-// // 		n.Cond = edit(n.Cond).(Node)
-// // 	}
-// // 	editNodes(n.Body, edit)
-// }
+func (n *DoWhileStmt) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
+func (n *DoWhileStmt) copy() Node {
+	c := *n
+	// c.init = copyNodes(c.init)
+	c.Body = copyNodes(c.Body)
+	return &c
+}
+func (n *DoWhileStmt) doChildren(do func(Node) bool) bool {
+	if n.Cond != nil && do(n.Cond) {
+		return true
+	}
+	if doNodes(n.Body, do) {
+		return true
+	}
+	return false
+}
+func (n *DoWhileStmt) editChildren(edit func(Node) Node) {
+	if n.Cond != nil {
+		n.Cond = edit(n.Cond).(Node)
+	}
+	editNodes(n.Body, edit)
+}
 
 func (n *Func) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
 

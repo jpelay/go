@@ -268,6 +268,20 @@ func tcFor(n *ir.ForStmt) ir.Node {
 	return n
 }
 
+// tcDoWhile typechecks an ODOWHILE node.
+func tcDoWhile(n *ir.DoWhileStmt) ir.Node {
+	n.Cond = Expr(n.Cond)
+	n.Cond = DefaultLit(n.Cond, nil)
+	if n.Cond != nil {
+		t := n.Cond.Type()
+		if t != nil && !t.IsBoolean() {
+			base.Errorf("non-bool %L used as do-while condition", n.Cond)
+		}
+	}
+	Stmts(n.Body)
+	return n
+}
+
 func tcGoDefer(n *ir.GoDeferStmt) {
 	what := "defer"
 	if n.Op() == ir.OGO {

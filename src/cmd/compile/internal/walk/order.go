@@ -803,6 +803,15 @@ func (o *orderState) stmt(n ir.Node) {
 		o.out = append(o.out, n)
 		o.cleanTemp(t)
 
+	case ir.ODOWHILE:
+		n := n.(*ir.DoWhileStmt)
+		t := o.markTemp()
+		n.Body.Prepend(o.cleanTempNoPop(t)...)
+		orderBlock(&n.Body, o.free)
+		n.Cond = o.exprInPlace(n.Cond)
+		o.out = append(o.out, n)
+		o.cleanTemp(t)
+
 	// Clean temporaries from condition at
 	// beginning of both branches.
 	case ir.OIF:

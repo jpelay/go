@@ -288,7 +288,11 @@ func (w walker) node(n Node) {
 			w.node(n.Post)
 		}
 		w.node(n.Body)
-
+	case *DoWhileStmt:
+		if n.Cond != nil {
+			w.node(n.Cond)
+		}
+		w.node(n.Body)
 	case *SwitchStmt:
 		if n.Init != nil {
 			w.node(n.Init)
