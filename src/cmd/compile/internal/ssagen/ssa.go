@@ -1816,6 +1816,61 @@ func (s *state) stmt(n ir.Node) {
 		}
 
 		s.startBlock(bEnd)
+	case ir.ODOWHILE:
+		// OFOR: for Ninit; Left; Right { Nbody }
+		// cond (Left); body (Nbody); incr (Right)
+		//
+		// OFORUNTIL: for Ninit; Left; Right; List { Nbody }
+		// => body: { Nbody }; incr: Right; if Left { lateincr: List; goto body }; end:
+		n := n.(*ir.DoWhileStmt)
+		bCond := s.f.NewBlock(ssa.BlockPlain)
+		bBody := s.f.NewBlock(ssa.BlockPlain)
+		// bIncr := s.f.NewBlock(ssa.BlockPlain)
+		bEnd := s.f.NewBlock(ssa.BlockPlain)
+
+		// ensure empty for loops have correct position; issue #30167
+		bBody.Pos = n.Pos()
+
+		// First jump to body
+		b := s.endBlock()
+		b.AddEdgeTo(bBody)
+
+		// set up for continue/break in body
+		prevContinue := s.continueTo
+		prevBreak := s.breakTo
+		s.continueTo = bCond
+		s.breakTo = bEnd
+		var lab *ssaLabel
+		if sym := n.Label; sym != nil {
+			// labeled for loop
+			lab = s.label(sym)
+			lab.continueTarget = bCond
+			lab.breakTarget = bEnd
+		}
+
+		// generate body
+		s.startBlock(bBody)
+		s.stmtList(n.Body)
+
+		// tear down continue/break
+		s.continueTo = prevContinue
+		s.breakTo = prevBreak
+		if lab != nil {
+			lab.continueTarget = nil
+			lab.breakTarget = nil
+		}
+		b = s.endBlock()
+		b.AddEdgeTo(bCond)
+		// generate code to test condition
+		s.startBlock(bCond)
+		if n.Cond != nil {
+			s.condBranch(n.Cond, bBody, bEnd, 1)
+		} else {
+			b := s.endBlock()
+			b.Kind = ssa.BlockPlain
+			b.AddEdgeTo(bBody)
+		}
+		s.startBlock(bEnd)
 
 	case ir.OSWITCH, ir.OSELECT:
 		// These have been mostly rewritten by the front end into their Nbody fields.
