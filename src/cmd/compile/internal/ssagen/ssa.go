@@ -1817,18 +1817,11 @@ func (s *state) stmt(n ir.Node) {
 
 		s.startBlock(bEnd)
 	case ir.ODOWHILE:
-		// OFOR: for Ninit; Left; Right { Nbody }
-		// cond (Left); body (Nbody); incr (Right)
-		//
-		// OFORUNTIL: for Ninit; Left; Right; List { Nbody }
-		// => body: { Nbody }; incr: Right; if Left { lateincr: List; goto body }; end:
 		n := n.(*ir.DoWhileStmt)
 		bCond := s.f.NewBlock(ssa.BlockPlain)
 		bBody := s.f.NewBlock(ssa.BlockPlain)
-		// bIncr := s.f.NewBlock(ssa.BlockPlain)
 		bEnd := s.f.NewBlock(ssa.BlockPlain)
 
-		// ensure empty for loops have correct position; issue #30167
 		bBody.Pos = n.Pos()
 
 		// First jump to body
